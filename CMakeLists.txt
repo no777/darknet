@@ -13,13 +13,26 @@ add_definitions(-DOPENCV)
 find_package(Protobuf REQUIRED)
 find_package(GRPC REQUIRED)
 
+#find_package ( ZMQ REQUIRED )
+#IF(ZMQ_FOUND)
+#    MESSAGE(STATUS "ZMQ_FOUND")
+#    list(APPEND LIBRARIES ${ZMQ_LIBRARIES})
+#endif()
+
+find_package(nanomsg REQUIRED)
+IF(nanomsg_FOUND)
+    MESSAGE(STATUS "nanomsg found")
+    list(APPEND LIBRARIES ${NANOMSG_LIBRARY})
+endif()
+
+
 FIND_PACKAGE(CUDNN REQUIRED)
 IF(NOT CUDNN_FOUND)
     # CUDNN_INSTALL(5.1 "${Torch_INSTALL_LIB}" "${Torch_INSTALL_INCLUDE}" "${Torch_INSTALL_BIN}")
     # FIND_PACKAGE(CUDNN 5 EXACT REQUIRED)
     MESSAGE(STATUS "CuDNN 5.1 not found at install-time. Please make sure it's in LD_LIBRARY_PATH at runtime")
 else()
-    message(CUDNN_LIBRARIES ${CUDNN_LIBRARIES})
+#    message(CUDNN_LIBRARIES ${CUDNN_LIBRARIES})
     add_definitions(-DCUDNN)
 
 ENDIF()
@@ -169,12 +182,13 @@ set(SRC_FILES
         helloworld.grpc.pb.cc
         helloworld.grpc.pb.h
         helloworld.pb.cc
-        helloworld.pb.h an_empty_file.cpp)
+        helloworld.pb.h an_empty_file.cpp src/pub-server.c src/pub-server.h)
 FILE(GLOB CU_SRC_FILES ${SRC_DIR}/*.cu)
 ADD_LIBRARY(opencv_dep_cudart STATIC an_empty_file.cpp)
 
 #add_executable(darknet ${SOURCE_FILES})
 
+#message(STATUS "LIBRARIES " ${LIBRARIES})
 if (CUDA_FOUND)
     message(STATUS "CUDA FOUND")
     cuda_add_library(dknet ${SRC_FILES} ${CU_SRC_FILES})
@@ -192,3 +206,5 @@ else ()
 #    add_library(pydarknet SHARED  ${SRC_DIR}/pydarknet.cpp)
 #    target_link_libraries(pydarknet ${LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${OpenCV_LIBS} dknet)
 endif()
+add_executable(sub-client ${SRC_DIR}/sub-client.c)
+target_link_libraries(sub-client ${NANOMSG_LIBRARY})
