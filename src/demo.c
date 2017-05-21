@@ -84,6 +84,20 @@ void *detect_in_thread(void *ptr)
     return 0;
 }
 
+
+#ifdef __cplusplus
+extern "C" { 
+#endif
+    
+image getImage(){
+    image  display = buff[(buff_index+2) % 3];
+    return display;
+}
+#ifdef __cplusplus
+}
+#endif
+
+
 void *fetch_in_thread(void *ptr)
 {
     int status = fill_image_from_stream(cap, buff[buff_index]);
@@ -91,6 +105,7 @@ void *fetch_in_thread(void *ptr)
     if(status == 0) demo_done = 1;
     return 0;
 }
+
 
 void *display_in_thread(void *ptr)
 {
@@ -168,6 +183,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
             cvSetCaptureProperty(cap, CV_CAP_PROP_FRAME_HEIGHT, h);
         }
         if(frames){
+            printf("cap fps: %d\n", frames);
             cvSetCaptureProperty(cap, CV_CAP_PROP_FPS, frames);
         }
     }
